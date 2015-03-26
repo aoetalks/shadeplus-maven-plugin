@@ -1,0 +1,1 @@
+# shadeplus-maven-plugin
