@@ -135,6 +135,7 @@ public class DefaultShader
 					String resource = entry.getName();
 					if ( resourceRelocatorTransformer.canTransformResource( resource ) )
 					{
+                        resourceRelocatorTransformer.processResource(resource, jarFile.getInputStream(entry),null);
 //						resourceRelocatorTransformer.processResource();
 //						resources.add( resource );
 //						resourceRelocatorTransformer.processResource( resource, jarFile.getInputStream( entry ),
