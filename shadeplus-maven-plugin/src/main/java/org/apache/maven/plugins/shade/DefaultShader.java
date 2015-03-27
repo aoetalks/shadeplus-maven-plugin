@@ -45,6 +45,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.shade.filter.Filter;
 import org.apache.maven.plugins.shade.relocation.Relocator;
 import org.apache.maven.plugins.shade.resource.ManifestResourceTransformer;
+import org.apache.maven.plugins.shade.resource.RootResourceRelocatorResourceTransformer;
 import org.apache.maven.plugins.shade.resource.ResourceTransformer;
 import org.codehaus.plexus.component.annotations.Component;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -74,6 +75,7 @@ public class DefaultShader
         Set<String> resources = new HashSet<String>();
 
         ResourceTransformer manifestTransformer = null;
+		RootResourceRelocatorResourceTransformer resourceRelocatorTransformer = null;
         List<ResourceTransformer> transformers =
             new ArrayList<ResourceTransformer>( shadeRequest.getResourceTransformers() );
         for ( Iterator<ResourceTransformer> it = transformers.iterator(); it.hasNext(); )
@@ -84,6 +86,11 @@ public class DefaultShader
                 manifestTransformer = transformer;
                 it.remove();
             }
+			if ( transformer instanceof RootResourceRelocatorResourceTransformer)
+			{
+				resourceRelocatorTransformer = (RootResourceRelocatorResourceTransformer) transformer;
+				it.remove();
+			}
         }
 
         RelocatorRemapper remapper = new RelocatorRemapper( shadeRequest.getRelocators() );
@@ -116,6 +123,31 @@ public class DefaultShader
                 manifestTransformer.modifyOutputStream( jos );
             }
         }
+
+		if ( resourceRelocatorTransformer != null )
+		{
+			for ( File jar : shadeRequest.getJars() )
+			{
+				JarFile jarFile = newJarFile( jar );
+				for ( Enumeration<JarEntry> en = jarFile.entries(); en.hasMoreElements(); )
+				{
+					JarEntry entry = en.nextElement();
+					String resource = entry.getName();
+					if ( resourceRelocatorTransformer.canTransformResource( resource ) )
+					{
+//						resourceRelocatorTransformer.processResource();
+//						resources.add( resource );
+//						resourceRelocatorTransformer.processResource( resource, jarFile.getInputStream( entry ),
+//															 shadeRequest.getRelocators() );
+						break;
+					}
+				}
+			}
+			if ( resourceRelocatorTransformer.hasTransformedResource() )
+			{
+				resourceRelocatorTransformer.modifyOutputStream( jos );
+			}
+		}
 
         // CHECKSTYLE_OFF: MagicNumber
         Multimap<String, File> duplicates = HashMultimap.create( 10000, 3 );

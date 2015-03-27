@@ -35,6 +35,7 @@ import org.apache.maven.plugins.shade.relocation.Relocator;
 import org.apache.maven.plugins.shade.relocation.SimpleRelocator;
 import org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer;
 import org.apache.maven.plugins.shade.resource.ResourceTransformer;
+import org.apache.maven.plugins.shade.resource.RootResourceRelocatorResourceTransformer;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.console.ConsoleLogger;
 import org.objectweb.asm.ClassReader;
@@ -50,6 +51,12 @@ public class DefaultShaderTest
 {
     private static final String[] EXCLUDES = new String[] { "org/codehaus/plexus/util/xml/Xpp3Dom",
         "org/codehaus/plexus/util/xml/pull.*" };
+
+	public void testShaderWithDefaultShadedPatternAndRootResourceRelocator()
+			throws Exception
+	{
+		shaderWithPatternAndRootRelocator( null, new File( "target/foo-default-root-relocated.jar" ), EXCLUDES );
+	}
 
     public void testShaderWithDefaultShadedPattern()
         throws Exception
@@ -190,6 +197,34 @@ public class DefaultShaderTest
 
         s.shade( shadeRequest );
     }
+
+	private void shaderWithPatternAndRootRelocator( String shadedPattern, File jar, String[] excludes )
+			throws Exception
+	{
+		DefaultShader s = newShader();
+
+		Set<File> set = new LinkedHashSet<File>();
+
+		set.add(new File("src/test/jars/deployer-1.0-SNAPSHOT.jar"));
+
+		List<Relocator> relocators = new ArrayList<Relocator>();
+
+		relocators.add( new SimpleRelocator( "org/codehaus/plexus/util", shadedPattern, null, Arrays.asList( excludes ) ) );
+		List<ResourceTransformer> resourceTransformers = new ArrayList<ResourceTransformer>();
+
+		resourceTransformers.add( new ComponentsXmlResourceTransformer() );
+		resourceTransformers.add( new RootResourceRelocatorResourceTransformer() );
+		List<Filter> filters = new ArrayList<Filter>();
+
+		ShadeRequest shadeRequest = new ShadeRequest();
+		shadeRequest.setJars( set );
+		shadeRequest.setUberJar( jar );
+		shadeRequest.setFilters( filters );
+		shadeRequest.setRelocators( relocators );
+		shadeRequest.setResourceTransformers( resourceTransformers );
+
+		s.shade( shadeRequest );
+	}
 
     private static DefaultShader newShader()
     {
