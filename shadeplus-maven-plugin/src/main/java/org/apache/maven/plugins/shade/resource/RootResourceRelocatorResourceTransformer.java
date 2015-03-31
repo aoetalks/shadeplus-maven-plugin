@@ -19,6 +19,7 @@ public class RootResourceRelocatorResourceTransformer implements ResourceTransfo
 {
 	private Map<Pair<String, String>, InputStream> resources = new HashMap<Pair<String, String>, InputStream>();
 
+	private boolean transformed = true;
 	private static final String ROOT_DIR_NAME = "ROOT_RESOURCES";
 
 	@Override
@@ -30,19 +31,20 @@ public class RootResourceRelocatorResourceTransformer implements ResourceTransfo
 	@Override
 	public void processResource(String resource, InputStream is, List<Relocator> relocators) throws IOException
 	{
-		throw new UnsupportedOperationException("Use other processResourceImplementation");
+		//No-op
 	}
 
 	public void processResource(String jarName, String resource, InputStream is)
 	{
 		resources.put(new Pair(jarName,resource), is);
+		transformed = true;
 	}
 
 
 	@Override
 	public boolean hasTransformedResource()
 	{
-		return false;
+		return transformed;
 	}
 
 	@Override
@@ -56,5 +58,7 @@ public class RootResourceRelocatorResourceTransformer implements ResourceTransfo
 			IOUtil.copy(in, os);
 			in.close();
 		}
+		resources.clear();
+		transformed = false;
 	}
 }

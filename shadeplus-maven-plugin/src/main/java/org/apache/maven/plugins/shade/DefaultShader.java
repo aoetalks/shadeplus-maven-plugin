@@ -89,7 +89,7 @@ public class DefaultShader
 			if ( transformer instanceof RootResourceRelocatorResourceTransformer)
 			{
 				resourceRelocatorTransformer = (RootResourceRelocatorResourceTransformer) transformer;
-				it.remove();
+//				it.remove();
 			}
         }
 
@@ -135,19 +135,20 @@ public class DefaultShader
 					String resource = entry.getName();
 					if ( resourceRelocatorTransformer.canTransformResource( resource ) )
 					{
-                        resourceRelocatorTransformer.processResource(jarFile.getName(), resource, jarFile.getInputStream(entry));
+                        resourceRelocatorTransformer.processResource(jar.getName(), resource, jarFile.getInputStream(entry));
 //						resourceRelocatorTransformer.processResource();
 //						resources.add( resource );
 //						resourceRelocatorTransformer.processResource( resource, jarFile.getInputStream( entry ),
 //															 shadeRequest.getRelocators() );
-						break;
+//						break;
+					}
+					if ( resourceRelocatorTransformer.hasTransformedResource() )
+					{
+						resourceRelocatorTransformer.modifyOutputStream( jos );
 					}
 				}
 			}
-			if ( resourceRelocatorTransformer.hasTransformedResource() )
-			{
-				resourceRelocatorTransformer.modifyOutputStream( jos );
-			}
+
 		}
 
         // CHECKSTYLE_OFF: MagicNumber

@@ -24,9 +24,12 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import junit.framework.TestCase;
 
@@ -55,7 +58,7 @@ public class DefaultShaderTest
 	public void testShaderWithDefaultShadedPatternAndRootResourceRelocator()
 			throws Exception
 	{
-		shaderWithPatternAndRootRelocator( null, new File( "target/foo-default-root-relocated.jar" ), EXCLUDES );
+		shaderWithPatternAndRootRelocator( null, new File( "target/foo-default-root-relocated.zip" ), EXCLUDES );
 	}
 
     public void testShaderWithDefaultShadedPattern()
@@ -224,6 +227,14 @@ public class DefaultShaderTest
 		shadeRequest.setResourceTransformers( resourceTransformers );
 
 		s.shade( shadeRequest );
+
+		//Assert resources are in proper place
+		JarFile shadedJar = new JarFile(jar);
+		assertNull(shadedJar.getEntry("project1root"));
+		assertNull(shadedJar.getEntry("project2root"));
+		assertNotNull(shadedJar.getEntry("ROOT_RESOURCES/deployer-1.0-SNAPSHOT.jar/project1root"));
+		assertNotNull(shadedJar.getEntry("ROOT_RESOURCES/deployer-1.0-SNAPSHOT.jar/project2root"));
+
 	}
 
     private static DefaultShader newShader()
